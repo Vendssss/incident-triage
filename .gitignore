@@ -4,11 +4,31 @@
 # Log file
 *.log
 
-# BlueJ files
-*.ctxt
+#IDE - VS Code
+.vscode/
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+#Maven
+target/
+
+#IDE - IntelliJ
+.idea/
+*.iml
+
+
+
+#OS
+Thumbs.db
+.DS_Store
+
+#VS CODE
+.classpath
+.project
+.settings/
+.factorypath
+bin/
+
+
+
 
 # Package Files #
 *.jar
