@@ -1,10 +1,10 @@
-package com.vendiola.incidentTriage;
+package com.vendiola.triage;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DemoApplicationTests {
+class IncidentTriageApplicationTests {
 
 	@Test
 	void contextLoads() {

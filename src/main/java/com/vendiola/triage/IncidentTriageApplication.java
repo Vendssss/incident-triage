@@ -1,13 +1,13 @@
-package com.vendiola.incidentTriage;
+package com.vendiola.triage;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class IncidentHubApplication {
+public class IncidentTriageApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(IncidentHubApplication.class, args);
+		SpringApplication.run(IncidentTriageApplication.class, args);
 	}
 
 }
