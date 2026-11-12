@@ -1,15 +1,15 @@
 # Progress
 
-Tracks where the project stands so work can resume on any machine.
+Tracks where the project stands and what comes next.
 
-**Last updated:** 2026-11-10
-**Current milestone:** 0 — Repo hygiene
+**Last updated:** 2026-11-13
+**Current milestone:** 1 — DB schema
 
 ## Milestones
 
 | # | Milestone | Status |
 |---|-----------|--------|
-| 0 | Repo hygiene | In progress |
+| 0 | Repo hygiene | Done |
 | 1 | DB schema (versioned migrations) | Not started |
 | 2 | Auth / RBAC (Spring Security + JWT) | Not started |
 | 3 | Incident CRUD + status workflow | Not started |
@@ -26,13 +26,11 @@ Tracks where the project stands so work can resume on any machine.
 - Removed the committed `target/` build output from version control
   (it contained a copied `application.properties`)
 - Fixed the local toolchain: `JAVA_HOME` now points to JDK 21, matching `pom.xml`
-
-### Remaining
-- [ ] Rename package `com.vendiola.incidentTriage` → `com.vendiola.triage` (lowercase)
-- [ ] Replace leftover template names: artifactId `demo`, `spring.application.name=demo`,
-      `DemoApplicationTests`, `IncidentHubApplication`
-- [ ] Rewrite `README.md` for the security incident triage scope
-- [ ] Add `docs/ARCHITECTURE.md` and `docs/GLOSSARY.md`
+- Renamed package `com.vendiola.incidentTriage` → `com.vendiola.triage` (lowercase)
+- Replaced template names: `IncidentTriageApplication`, `IncidentTriageApplicationTests`,
+  artifactId and `spring.application.name` `incident-triage`; removed empty POM placeholders
+- Rewrote `README.md` for the security incident triage scope
+- Added `docs/ARCHITECTURE.md`
 
 ## Decisions
 - **Package name `com.vendiola.triage`.** All lowercase per Java convention, and a genuinely
@@ -41,8 +39,8 @@ Tracks where the project stands so work can resume on any machine.
   not the `postgres` superuser. Credentials come from environment variables.
 
 ## Next up
-Finish Milestone 0, then Milestone 1: add Spring Data JPA, the PostgreSQL driver and
-Flyway, and create the first versioned migration for users and incidents.
+Milestone 1: add Spring Data JPA, the PostgreSQL driver and Flyway; create a dedicated
+database and role; write the first versioned migration for users and incidents.
 
 ## Environment notes
 - JDK 21 (`JAVA_HOME` must point to it; `.\mvnw -v` shows which JDK Maven uses)
