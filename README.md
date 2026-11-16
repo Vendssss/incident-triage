@@ -36,7 +36,29 @@ audit trail.
 - JDK 21 (`JAVA_HOME` must point to it)
 - PostgreSQL 15 or newer
 
+### Database setup
+
+Create a dedicated database and role (run as a PostgreSQL superuser, one statement at a time):
+
+```sql
+CREATE ROLE triage_app WITH LOGIN PASSWORD '<choose-a-password>';
+CREATE DATABASE incident_triage OWNER triage_app;
+```
+
+Then provide the password through an environment variable. It is never stored in the repository.
+
+| Variable | Required | Default |
+|----------|----------|---------|
+| `TRIAGE_DB_PASSWORD` | yes | — |
+| `TRIAGE_DB_URL` | no | `jdbc:postgresql://localhost:5432/incident_triage` |
+| `TRIAGE_DB_USERNAME` | no | `triage_app` |
+
+Tables are created automatically on startup by Flyway migrations in
+`src/main/resources/db/migration`.
+
 ### Build and test
+
+Tests start the full application, so the database must be running.
 
 ```bash
 ./mvnw clean test
