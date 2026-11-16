@@ -40,11 +40,11 @@ project grows.
 |---------|----------|--------|
 | `com.vendiola.triage` | `IncidentTriageApplication` (entry point) | Done |
 | `…triage.incident` | Incident entity, repository, service, controller, DTOs | Planned |
-| `…triage.user` | User entity, roles | Planned |
-| `…triage.auth` | Login, JWT issuing and validation, security config | Planned |
+| `…triage.user` | `User` entity, `Role`, repository, service, controller, DTOs, first-admin bootstrap | Done |
+| `…triage.auth` | Security filter chain, login endpoint, token issuing and validation | Done |
 | `…triage.comment` | Incident comments | Planned |
 | `…triage.audit` | Audit log entries | Planned |
-| `…triage.common` | Error handling, shared utilities | Planned |
+| `…triage.common` | `GlobalExceptionHandler` and shared exceptions | Done |
 
 ## Data model
 
@@ -87,15 +87,45 @@ Allowed values:
 | `spring.datasource.username` | `TRIAGE_DB_USERNAME`, defaults to `triage_app` |
 | `spring.jpa.open-in-view` | `false`: database work stays inside the service layer |
 
-## Security model (planned)
+## Security model
 
-- Stateless authentication with JWT; no server-side sessions.
-- Passwords hashed with BCrypt.
-- Role checks at the service layer, not only in the UI.
-- Secrets (DB password, JWT signing key) come from environment variables, never from
-  committed files.
+```
+POST /api/auth/login {username, password}
+  → AuthenticationManager → DaoAuthenticationProvider
+      → DatabaseUserDetailsService (users table) + PasswordEncoder (BCrypt)
+  → TokenService signs a JWT (HS256): iss, sub=username, iat, exp, roles=[...]
+  ← {accessToken, tokenType: "Bearer", expiresIn: 900}
+
+GET /api/users/me   Authorization: Bearer <token>
+  → BearerTokenAuthenticationFilter → JwtDecoder (signature, exp, iss)
+  → roles claim → ROLE_* authorities → @PreAuthorize checks
+```
+
+- **Stateless:** no server-side session; every request carries its token. CSRF protection
+  is disabled because no session cookie exists to be abused.
+- **Tokens** expire after 15 minutes. The signing key comes from `TRIAGE_JWT_SECRET`; the
+  app refuses to start if it is missing, not Base64 or shorter than 256 bits.
+- **Passwords** are hashed with BCrypt through Spring's delegating encoder (stored as
+  `{bcrypt}...`), so the algorithm can be upgraded without invalidating existing hashes.
+  Length is capped at 72 characters, BCrypt's input limit.
+- **Authorization** is declared per endpoint with `@PreAuthorize` and enforced on the
+  server; the UI only hides what the API already forbids.
+- **No account enumeration:** unknown user, wrong password and disabled account all return
+  the same `401` response.
+- **Responses never expose password hashes**; controllers return DTOs, not entities.
+- **Errors** follow RFC 9457 (`application/problem+json`): 400 validation, 401
+  unauthenticated, 403 forbidden, 404 not found, 409 conflict.
+- **Bootstrap:** when the users table is empty, an `ADMIN` account is created from
+  `TRIAGE_ADMIN_PASSWORD`. Nothing happens once any user exists.
 - The application connects to PostgreSQL as a dedicated least-privilege role, not the
   `postgres` superuser.
+
+| Endpoint | ANALYST | LEAD | ADMIN |
+|----------|:-------:|:----:|:-----:|
+| `POST /api/auth/login` | public | public | public |
+| `GET /api/users/me` | ✓ | ✓ | ✓ |
+| `GET /api/users`, `GET /api/users/{id}` | — | ✓ | ✓ |
+| `POST /api/users` | — | — | ✓ |
 
 ## Key decisions
 
@@ -105,6 +135,8 @@ Allowed values:
 | PostgreSQL | Open-source, strong constraints and transactional guarantees |
 | Flyway migrations | Schema changes are versioned, reviewable and repeatable across environments |
 | `ddl-auto=validate` | Hibernate must never alter a shared database; migrations are the single source of truth |
+| Spring Security's built-in JWT support (Nimbus) | Maintained with the framework; no extra JWT library to keep patched |
+| HS256 with a shared secret | One service both issues and validates tokens; RS256 key pairs become useful once other services must verify tokens |
 | Optimistic locking on incidents | Two analysts editing the same incident can't silently overwrite each other |
 | Package-by-feature | Keeps each feature cohesive; easier to navigate than package-by-layer at scale |
 | DTOs at the API boundary | Entities can change without breaking the API; avoids leaking internal fields |
