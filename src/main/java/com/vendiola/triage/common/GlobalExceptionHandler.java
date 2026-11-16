@@ -1,5 +1,6 @@
 package com.vendiola.triage.common;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.core.AuthenticationException;
@@ -21,6 +22,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 				"Invalid username or password");
 		problem.setTitle("Authentication failed");
 		return problem;
+	}
+
+	@ExceptionHandler(ResourceNotFoundException.class)
+	ProblemDetail handleNotFound(ResourceNotFoundException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+	}
+
+	@ExceptionHandler(ConflictException.class)
+	ProblemDetail handleConflict(ConflictException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+		// A unique or foreign key constraint caught what the service-level checks missed (e.g. a race)
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+				"The request conflicts with existing data");
 	}
 
 }
