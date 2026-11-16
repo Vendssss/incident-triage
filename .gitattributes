@@ -1,2 +1,6 @@
+# Normalize text files to LF in the repository, regardless of each contributor's settings
+* text=auto
+
+# Shell scripts must keep LF to run on Linux/macOS; Windows batch files need CRLF
 /mvnw text eol=lf
 *.cmd text eol=crlf
